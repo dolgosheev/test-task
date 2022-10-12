@@ -1,0 +1,42 @@
+/*
+    MIT License
+    Copyright (c) 2022 Test task
+
+    File overview: 
+	    gRPC interface for service interaction
+  
+    Description:
+        Service is responsible for 
+            - GetUser (client unary calls)
+*/
+
+syntax = "proto3";
+package testgrpc.v3;
+option csharp_namespace = "TestGrpc";
+
+service TestGrpcService {
+    rpc GetUser(GetUserRequest) returns(GetUserResponse);
+    rpc GetUsers(GetUsersRequest) returns(GetUsersResponse);
+}
+  
+message GetUserRequest{
+    int64 user_id = 1;
+}
+
+message GetUserResponse{
+    UserEntity user = 1;
+}
+
+message GetUsersRequest{
+}
+
+message GetUsersResponse{
+    repeated UserEntity users = 1;
+}
+
+message UserEntity{
+    int64 user_id = 1;
+    string user_nick_name = 2;
+    string user_first_name = 3;
+    int32 user_age= 4;
+}
