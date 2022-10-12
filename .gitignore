@@ -1,0 +1,16 @@
+.vs/**
+**/.vs/**
+.idea/**
+**/.idea/**
+**/bin/**
+**/obj/**
+**.user
+**.pubxml
+appsettings.**.json
+
+Db/db/pg_stat
+Db/db/global/pg_control
+
+**/pg_internal.init
+Db/db/pg_wal
+postmaster.pid
