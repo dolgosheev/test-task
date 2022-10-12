@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- GRPC section -->
+        <PackageReference Include="Google.Protobuf" Version="3.21.6"/>
+        <PackageReference Include="Google.Protobuf.Tools" Version="3.21.6"/>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.48.0"/>
+        <PackageReference Include="Grpc.Tools" Version="2.48.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+
+        <!-- Logger section -->
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1"/>
+        <PackageReference Include="Serilog.OpenTelemetry" Version="2.1.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0"/>
+        <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.0"/>
+
+        <!-- Required packages section -->
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.9"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.7"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.9">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Remove="../Proto/test-grpc/v1/test-grpc.proto"/>
+        <Protobuf Include="../Proto/test-grpc/v1/test-grpc.proto" GrpcServices="Server" Link="Proto/test-grpc/v1/test-grpc.proto" ProtoRoot=".."/>
+    </ItemGroup>
+
+</Project>
