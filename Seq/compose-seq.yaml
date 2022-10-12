@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  seq:
+    environment:
+      - ACCEPT_EULA=Y
+    image: datalust/seq:latest
+    ports:
+      - '81:80'
+      - '5342:5341'
+    volumes: 
+      - seq-testtask:/data
+    container_name: seq-testtask
+    restart: unless-stopped
+volumes:
+  seq-testtask:
+    driver: local

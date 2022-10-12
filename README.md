@@ -43,3 +43,9 @@
 - Docker app (docker compose file + .env + local volume)
 
 `docker-compose -f Db/compose-postgresql-db.yaml up -d`
+
+## Datalust Seq ##
+
+- Docker app (docker compose file + virtual volume)
+
+`docker-compose -f Seq/compose-seq.yaml up -d`
