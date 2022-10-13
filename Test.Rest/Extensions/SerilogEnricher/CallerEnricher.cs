@@ -4,7 +4,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Test.Grpc.Extensions.SerilogEnricher
+namespace Test.Rest.Extensions.SerilogEnricher
 {
     public class CallerEnricher : ILogEventEnricher
     {

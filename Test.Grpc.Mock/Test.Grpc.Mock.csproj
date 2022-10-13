@@ -15,7 +15,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-    
+
     <ItemGroup>
         <Protobuf Remove="../Proto/test-grpc/v1/test-grpc.proto"/>
         <Protobuf Include="../Proto/test-grpc/v1/test-grpc.proto" GrpcServices="Client" Link="Proto/test-grpc/v1/test-grpc.proto" ProtoRoot=".."/>

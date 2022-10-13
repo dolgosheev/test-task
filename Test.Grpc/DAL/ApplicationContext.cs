@@ -2,17 +2,18 @@ using Microsoft.EntityFrameworkCore;
 
 using Test.Grpc.DAL.Entities;
 
-namespace Test.Grpc.DAL;
-
-public class ApplicationContext : DbContext
+namespace Test.Grpc.DAL
 {
-    public ApplicationContext()
+    public class ApplicationContext : DbContext
     {
-    }
+        public ApplicationContext()
+        {
+        }
 
-    public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
-    {
-    }
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
+        {
+        }
 
-    public virtual DbSet<User>? Users { get; set; }
+        public virtual DbSet<User>? Users { get; set; }
+    }
 }

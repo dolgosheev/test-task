@@ -7,55 +7,56 @@ using Test.Grpc.ServiceInterfaces;
 
 using TestGrpc;
 
-namespace Test.Grpc.Services;
-
-public class GrpcService : TestGrpcService.TestGrpcServiceBase
+namespace Test.Grpc.Services
 {
-    private readonly IMapper _mapper;
-    private readonly IUser _user;
-
-    public GrpcService(IHostEnvironment env, ILogger<GrpcService> logger, IUser user)
+    public class GrpcService : TestGrpcService.TestGrpcServiceBase
     {
-        _user = user;
+        private readonly IMapper _mapper;
+        private readonly IUser _user;
 
-        var config = new MapperConfiguration(cfg =>
+        public GrpcService(IHostEnvironment env, ILogger<GrpcService> logger, IUser user)
         {
-            cfg.AllowNullCollections = true;
-            cfg.AllowNullDestinationValues = true;
-            cfg.AddProfile(typeof(UserProfile));
-        });
+            _user = user;
 
-        if (env.IsDevelopment())
-        {
-            config.CompileMappings();
-            config.AssertConfigurationIsValid();
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AllowNullCollections = true;
+                cfg.AllowNullDestinationValues = true;
+                cfg.AddProfile(typeof(UserProfile));
+            });
+
+            if (env.IsDevelopment())
+            {
+                config.CompileMappings();
+                config.AssertConfigurationIsValid();
+            }
+
+            _mapper = new Mapper(config);
+
+            logger.LogInformation("The service [{ServiceName}] is successfully started at [{StartTime}] (UTC)",
+                nameof(GrpcService), DateTime.UtcNow.ToString("F"));
         }
 
-        _mapper = new Mapper(config);
+        public override async Task<GetUserResponse> GetUser(GetUserRequest request, ServerCallContext context)
+        {
+            var response = await _user.GetUserAsync(request.UserId);
 
-        logger.LogInformation("The service [{ServiceName}] is successfully started at [{StartTime}] (UTC)",
-            nameof(GrpcService), DateTime.UtcNow.ToString("F"));
-    }
+            if (response is null) return new GetUserResponse();
 
-    public override async Task<GetUserResponse> GetUser(GetUserRequest request, ServerCallContext context)
-    {
-        var response = await _user.GetUserAsync(request.UserId);
+            var map = _mapper.Map<UserEntity>(response);
 
-        if (response is null) return new GetUserResponse();
+            if (map is null) return new GetUserResponse();
 
-        var map = _mapper.Map<UserEntity>(response);
+            return _mapper.Map<GetUserResponse>(map);
+        }
 
-        if (map is null) return new GetUserResponse();
+        public override async Task<GetUsersResponse> GetUsers(GetUsersRequest request, ServerCallContext context)
+        {
+            var response = await _user.GetUsersAsync();
 
-        return _mapper.Map<GetUserResponse>(map);
-    }
-
-    public override async Task<GetUsersResponse> GetUsers(GetUsersRequest request, ServerCallContext context)
-    {
-        var response = await _user.GetUsersAsync();
-
-        return response is null
-            ? new GetUsersResponse()
-            : new GetUsersResponse {Users = {_mapper.Map<IList<UserEntity>>(response)}};
+            return response is null
+                ? new GetUsersResponse()
+                : new GetUsersResponse {Users = {_mapper.Map<IList<UserEntity>>(response)}};
+        }
     }
 }

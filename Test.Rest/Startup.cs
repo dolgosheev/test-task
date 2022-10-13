@@ -1,43 +1,21 @@
 using System.Net;
 
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.EntityFrameworkCore;
 
 using Serilog;
 using Serilog.OpenTelemetry;
 
-using Test.Grpc.DAL;
-using Test.Grpc.Extensions.SerilogEnricher;
-using Test.Grpc.ServiceInterfaces;
-using Test.Grpc.Services;
+using Test.Rest.Extensions.SerilogEnricher;
+using Test.Rest.ServiceConnectors;
+using Test.Rest.Services;
 
-namespace Test.Grpc
+namespace Test.Rest
 {
-    // System configuration class
     public static class Startup
     {
-        // interlock Sync flag
-        public static int Sync;
-
         // Config Host & Services
         internal static WebApplicationBuilder ConfigureHost(WebApplicationBuilder builder)
         {
-            var pgsqlHost = builder.Configuration.GetValue<string>("Postgres:Host");
-            var pgsqlPort = builder.Configuration.GetValue<string>("Postgres:Port");
-            var pgsqlUser = builder.Configuration.GetValue<string>("Postgres:User");
-            var pgsqlPassword = builder.Configuration.GetValue<string>("Postgres:Password");
-            var pgsqlDb = builder.Configuration.GetValue<string>("Postgres:Database");
-
-            var connectionString =
-                $"Host={pgsqlHost};Port={pgsqlPort};Database={pgsqlDb};Username={pgsqlUser};Password={pgsqlPassword};";
-
-            // Database configuration
-            builder.Services.AddDbContext<ApplicationContext>(context =>
-                context.UseNpgsql(connectionString,
-                    opt => { opt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); }
-                )
-            );
-
             // Logger config
             builder.Host.UseSerilog((context, lc) => lc
                 .Enrich.WithCaller()
@@ -62,37 +40,30 @@ namespace Test.Grpc
                         AppDomain.CurrentDomain.FriendlyName,
                         DateTime.UtcNow.ToString("F"));
 
-                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.Protocols = HttpProtocols.Http1;
                 });
             });
 
-            // Services collection
-            builder.Services.AddScoped<IUser, UserService>();
+            builder.Services.AddSingleton<ITestGrpc, ServiceConnectors.TestGrpc>();
 
-            // gRPC config
-            builder.Services.AddGrpc(options =>
-            {
-                options.EnableDetailedErrors = true;
-                options.IgnoreUnknownServices = false;
-                options.MaxReceiveMessageSize = 4194304;
-                options.MaxSendMessageSize = 4194304;
-                options.EnableDetailedErrors = true;
-            });
+            builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
+            builder.Services.AddSingleton<PrometheusService>();
             return builder;
         }
 
         // Config App
         internal static WebApplication ConfigApp(WebApplication app, CancellationToken token)
         {
-            // Init services
             using (var serviceScope = app.Services.GetService<IServiceScopeFactory>()?.CreateScope())
             {
                 if (serviceScope != null)
                 {
-                    // Postgres SQL migration
-                    var applicationContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationContext>();
-                    applicationContext.Database.Migrate();
+                    /* Prometheus */
+                    var prometheus = serviceScope.ServiceProvider.GetRequiredService<PrometheusService>();
+                    prometheus.Init(token);
                 }
             }
 
@@ -108,9 +79,12 @@ namespace Test.Grpc
                 app.UseHsts();
             }
 
-            app.UseRouting();
+            app.UseSerilogRequestLogging();
 
-            app.UseEndpoints(endpoints => { endpoints.MapGrpcService<GrpcService>(); });
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseAuthorization();
+            app.MapControllers();
 
             return app;
         }

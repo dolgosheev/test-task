@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Serilog.Configuration;
 
-namespace Test.Grpc.Extensions.SerilogEnricher
+namespace Test.Rest.Extensions.SerilogEnricher
 {
     public static class CallerEnrichmentConfiguration
     {

@@ -4,66 +4,67 @@ using Test.Grpc.DAL;
 using Test.Grpc.DAL.Entities;
 using Test.Grpc.ServiceInterfaces;
 
-namespace Test.Grpc.Services;
-
-public class UserService : IUser
+namespace Test.Grpc.Services
 {
-    private readonly ApplicationContext _ctx;
-    private readonly ILogger<UserService> _logger;
-
-    public UserService(ApplicationContext ctx, ILogger<UserService> logger)
+    public class UserService : IUser
     {
-        _ctx = ctx;
-        _logger = logger;
-    }
+        private readonly ApplicationContext _ctx;
+        private readonly ILogger<UserService> _logger;
 
-    public async Task<User?> GetUserAsync(long? userId)
-    {
-        if (userId is null || _ctx.Users is null) return null;
-
-        while (Interlocked.Exchange(ref Startup.Sync, 1) == 0)
-            Thread.Sleep(10);
-
-        try
+        public UserService(ApplicationContext ctx, ILogger<UserService> logger)
         {
-            var result = await _ctx.Users.FindAsync(userId);
-            if (result is not null)
-                return result;
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning("An error was occured {Exception}", e.Message);
-        }
-        finally
-        {
-            Interlocked.Exchange(ref Startup.Sync, 0);
+            _ctx = ctx;
+            _logger = logger;
         }
 
-        _logger.LogError("Could not execute {Method}", nameof(GetUserAsync));
-        return null;
-    }
-
-    public async Task<List<User>?> GetUsersAsync()
-    {
-        if (_ctx.Users is null) return null;
-
-        while (Interlocked.Exchange(ref Startup.Sync, 1) == 0)
-            Thread.Sleep(10);
-
-        try
+        public async Task<User?> GetUserAsync(long? userId)
         {
-            return await _ctx.Users.ToListAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning("An error was occured {Exception}", e.Message);
-        }
-        finally
-        {
-            Interlocked.Exchange(ref Startup.Sync, 0);
+            if (userId is null || _ctx.Users is null) return null;
+
+            while (Interlocked.Exchange(ref Startup.Sync, 1) == 0)
+                Thread.Sleep(10);
+
+            try
+            {
+                var result = await _ctx.Users.FindAsync(userId);
+                if (result is not null)
+                    return result;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("An error was occured {Exception}", e.Message);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref Startup.Sync, 0);
+            }
+
+            _logger.LogError("Could not execute {Method}", nameof(GetUserAsync));
+            return null;
         }
 
-        _logger.LogError("Could not execute {Method}", nameof(GetUsersAsync));
-        return null;
+        public async Task<List<User>?> GetUsersAsync()
+        {
+            if (_ctx.Users is null) return null;
+
+            while (Interlocked.Exchange(ref Startup.Sync, 1) == 0)
+                Thread.Sleep(10);
+
+            try
+            {
+                return await _ctx.Users.ToListAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("An error was occured {Exception}", e.Message);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref Startup.Sync, 0);
+            }
+
+            _logger.LogError("Could not execute {Method}", nameof(GetUsersAsync));
+            return null;
+        }
     }
 }
