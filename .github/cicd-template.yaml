@@ -1,0 +1,196 @@
+# deeplay-io/workflow-templates/.github/workflows/ci-cd.yml@test
+name: CI/CD [dev branch] (.net6 core, node.js 16.*, netsrv registry)
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        type: string
+        required: true
+      chart_version:
+        type: number
+        required: false
+        default: 0.1.1
+      environment:
+        type: string
+        required: true
+        default: stage
+    secrets:
+      DOCKER_USERNAME_DEEPLAY:
+        required: true
+      DOCKER_PASSWORD_DEEPLAY:
+        required: true
+      RT_NETSRV_IT_PASSWORD:
+        required: true
+      KUBE_CONFIG:
+        required: true
+      HARBOR_SECRET_ARM:
+        required: true
+      ACCESS_SEQ_TOKEN:
+        required: true
+      ACCESS_LOOKUP_TOKEN:
+        required: false
+      AQUEDUCT_KEY:
+        required: true
+      NUGET_PASSWORD:
+        required: true
+
+defaults:
+  run:
+    working-directory: ./
+
+jobs:
+  prepare_application:
+    runs-on:
+      - self-hosted
+      - Linux
+      - kube-common
+
+    outputs:
+      sha: ${{ steps.short-sha.outputs.sha }}
+      chart-version: ${{ steps.chart-version.outputs.version }}
+      tag: ${{ steps.tag-name.outputs.tag }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup .net6 core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        source-url: https://nuget.pkg.github.com/deeplay-io/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js 16.*
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Add netsrv nuget registry, Build project release # Test.Grpc/Test.Grpc.csproj
+      run: |
+        dotnet nuget add source https://rt.netsrv.it:39443/artifactory/api/nuget/neo-nuget --name artifactory --username neo_rt_nuget_puller --password ${{ secrets.RT_NETSRV_IT_PASSWORD }} --store-password-in-clear-text
+        dotnet publish ./${{ inputs.project }}/${{ inputs.project }}.csproj -c Release -o publish
+
+    - name: Deeplay registry sign in
+      uses: docker/login-action@v2
+      with:
+        registry: registry.deeplay.io
+        username: ${{ secrets.DOCKER_USERNAME_DEEPLAY }}
+        password: ${{ secrets.DOCKER_PASSWORD_DEEPLAY }}
+
+    - name: Get branch name
+      uses: deeplay-io/action-sanitize-branch-name@a918e9f86dcb6ff090bb6e1f557c2d5c4a8e2781
+
+    - name: Get short sha
+      uses: benjlevesque/short-sha@v1.2
+      id: short-sha
+      with:
+        length: 7
+
+    - name: Get tag name
+      uses: little-core-labs/get-git-tag@v3.0.1
+      id: tag-name
+
+    - name: Set docker tag
+      env:
+        TAG_NAME: ${{ steps.tag-name.outputs.tag }}
+        SHORT_SHA: ${{ steps.short-sha.outputs.sha }}
+        DEFAULT_VERSION_CHART: ${{ inputs.chart_version }}
+      run: |
+        APP=$(echo "${{ inputs.project }}" | sed 's/\./-/g' | awk '{print tolower($0)}')
+        echo 'DOCKER_TAGS<<EOF' >> $GITHUB_ENV
+        if [ "$TAG_NAME" != "" ]; then
+          echo "registry.deeplay.io/arm/${APP}:${DEFAULT_VERSION_CHART}-${TAG_NAME}"
+        elif [ "$BRANCH_NAME" == "master" ] || [ "$BRANCH_NAME" == "main" ]; then
+          echo "registry.deeplay.io/arm/${APP}:latest"
+          echo "registry.deeplay.io/arm/${APP}:${DEFAULT_VERSION_CHART}-${SHORT_SHA}"
+        elif [ "$BRANCH_NAME" == "dev" ]; then
+          echo "registry.deeplay.io/arm/${APP}:${DEFAULT_VERSION_CHART}-${SHORT_SHA}"
+        fi >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ${{ inputs.project }}.Dockerfile
+        build-args: |
+          NUGET_PASSWORD=${{ secrets.NUGET_PASSWORD }}
+        push: true
+        tags: ${{ env.DOCKER_TAGS }}
+
+  prepare_helm:
+    runs-on:
+      - self-hosted
+      - Linux
+      - kube-common
+    needs: prepare_application
+    container:
+      image: quay.io/roboll/helmfile:v0.142.0
+    env:
+      HELM_EXPERIMENTAL_OCI: 1
+      TAG_NAME: ${{ needs.prepare_application.outputs.tag }}
+      SHORT_SHA: ${{ needs.prepare_application.outputs.sha }}
+      DEFAULT_VERSION_CHART: ${{ inputs.chart_version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Lint helm chart
+      run: |
+        APP=$(echo "${{ inputs.project }}" | sed 's/\./-/g' | awk '{print tolower($0)}')
+        echo "APP=${APP}" >> $GITHUB_ENV
+        if [ "$TAG_NAME" != "" ]; then
+          echo "SHORT_SHA=$TAG_NAME" >> $GITHUB_ENV
+        fi
+        sed -i "s/name\:.*/name\: ${APP}/" .helm/app/Chart.yaml
+        sed -i "s/description\:.*/description\: A Helm chart for ${APP}/" .helm/app/Chart.yaml
+        sed -i "s/version\:.*/version\: ${DEFAULT_VERSION_CHART}-${SHORT_SHA}/" .helm/app/Chart.yaml
+        sed -i "s/appVersion\:.*/appVersion\: ${DEFAULT_VERSION_CHART}-${SHORT_SHA}/" .helm/app/Chart.yaml
+        helm lint ./.helm/${APP}
+
+    - name: Push helm chart
+      run: |
+        helm registry login https://registry.deeplay.io/ --username '${{ secrets.DOCKER_USERNAME_DEEPLAY }}' --password '${{ secrets.DOCKER_PASSWORD_DEEPLAY }}'
+        helm package ./.helm/app
+        helm push ${APP}-${DEFAULT_VERSION_CHART}-${SHORT_SHA}.tgz oci://registry.deeplay.io/arm/${APP}-chart
+        rm ${APP}-${DEFAULT_VERSION_CHART}-${SHORT_SHA}.tgz
+
+  deploy:
+    needs:
+    - prepare_helm
+    - prepare_application
+    runs-on:
+      - self-hosted
+      - Linux
+      - kube-common
+
+    container:
+      image: quay.io/roboll/helmfile:v0.142.0
+    env:
+      HELM_EXPERIMENTAL_OCI: 1
+      TAG_NAME: ${{ needs.prepare_application.outputs.tag }}
+      SHORT_SHA: ${{ needs.prepare_application.outputs.sha }}
+      DEFAULT_VERSION_CHART: ${{ inputs.chart_version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Deploy
+      env:
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/CONFIG
+        export KUBECONFIG=~/CONFIG
+        export PG_PWD=$(kubectl get secret --namespace app-ns-${ENVIRONMENT} postgres.app-${ENVIRONMENT}-app-launcher-postgres.credentials.postgresql.acid.zalan.do -o jsonpath="{.data.password}" | base64 -d)
+        APP=$(echo "${{ inputs.project }}" | sed 's/\./-/g' | awk '{print tolower($0)}')
+        echo "APP=${APP}" >> $GITHUB_ENV
+        if [ "$TAG_NAME" != "" ]; then
+          echo "SHORT_SHA=$TAG_NAME" >> $GITHUB_ENV
+        fi
+        helmfile -f .helm/helmfile.yaml -e ${ENVIRONMENT} --state-values-set POSTGRES_PASSWORD=${PG_PWD},SEQ_TOKEN=${{ secrets.ACCESS_SEQ_TOKEN }},LOOKUP_TOKEN=${{ secrets.ACCESS_LOOKUP_TOKEN }},HARBOR_SECRET=${{ secrets.HARBOR_SECRET_ARM }},CHART_TAG=${DEFAULT_VERSION_CHART}-${SHORT_SHA},APP=${APP},AQUEDUCT_KEY=${{ secrets.AQUEDUCT_KEY }} sync

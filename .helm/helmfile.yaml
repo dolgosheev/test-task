@@ -1,0 +1,44 @@
+helmDefaults:
+  wait: true
+  atomic: true
+  timeout: 300
+
+repositories:
+  - url: registry.deeplay.io/arm
+    name: deeplay-arm
+    username: robot$arm+chat'
+    password: {{ .Values.HARBOR_SECRET }}
+    oci: true
+  - url: https://helm.datalust.co/
+    name: seq
+
+environments:
+  stage:
+  prod:
+
+releases:
+  - name: postgresql-config-zalando-app-{{ .Environment.Name }}
+    namespace: app-ns-{{ .Environment.Name }}
+    version: 0.0.1-14
+    createNamespace: false
+    chart: deeplay-arm/postgresql-config-zalando-chart/postgresql-config-zalando
+    values:
+      - ./values.yaml.gotmpl
+      - ./{{ .Environment.Name }}/postgres-values.yaml.gotmpl
+  - name: seq-app-{{ .Environment.Name }}
+    namespace: app-ns-{{ .Environment.Name }}
+    version: 2022.1.7929
+    createNamespace: false
+    chart: seq/seq
+    values:
+      - ./values.yaml.gotmpl
+      - ./{{ .Environment.Name }}/seq-values.yaml.gotmpl
+  - name: {{ .Values.APP }}-env-{{ .Environment.Name }}
+    namespace: app-ns-{{ .Environment.Name }}
+    version: {{ .Values.CHART_TAG }}
+    createNamespace: false
+    chart: deeplay-arm/{{ .Values.APP }}-chart/{{ .Values.APP }}
+    values:
+      - ./{{ .Environment.Name }}/{{ .Values.APP }}-values.yaml.gotmpl
+      - image:
+          repository: registry.deeplay.io/arm/{{ .Values.APP }}

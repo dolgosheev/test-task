@@ -1,0 +1,20 @@
+appSettings:
+  "Postgres:Host": "app-{{ .Environment.Name }}-app-launcher-postgres"
+  "Postgres:Password": {{ .Values.POSTGRES_PASSWORD | quote }}
+  "Postgres:Database": "app-{{ .Environment.Name }}"
+  "Serilog:MinimumLevel:Default": "Information"
+  "Serilog:WriteTo:0:Args:serverUrl": "http://seq-app-{{ .Environment.Name }}:5341/"
+  {{/* "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN }} */}}
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 500Mi
+  requests:
+    cpu: 200m
+    memory: 500Mi
+
+service:
+  port: 30001
+  metrics:
+    port: 30457

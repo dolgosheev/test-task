@@ -1,0 +1,23 @@
+appSettings:
+  "TestGrpc:Host": "test-task-grpc-env-{{ .Environment.Name }}"
+  "Postgres:Host": "app-{{ .Environment.Name }}-app-launcher-postgres"
+  "Serilog:MinimumLevel:Default": "Verbose"
+  "Serilog:WriteTo:0:Args:serverUrl": "http://seq-app-{{ .Environment.Name }}:5341/"
+  {{/* "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN }} */}}
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 500Mi
+  requests:
+    cpu: 200m
+    memory: 500Mi
+
+service:
+  port: 30002
+  metrics:
+    port: 30003
+
+virtualhost:
+  host: rest.app-ns-{{ .Environment.Name }}.deeplay.io
+  certhost: *.app-ns-{{ .Environment.Name }}.deeplay.io

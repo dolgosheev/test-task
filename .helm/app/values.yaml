@@ -1,0 +1,38 @@
+replicaCount: 1
+
+image:
+  repository: registry.deeplay.io/arm/app
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  name: grpc
+  type: ClusterIP
+  port: 30407
+  metrics:
+    name: prometheus
+    port: 30457
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+appSettings: {}

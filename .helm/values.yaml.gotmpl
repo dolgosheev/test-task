@@ -1,0 +1,41 @@
+# postgres
+psql:
+  name: app
+  environment: {{ .Environment.Name }}
+  parameters:
+    dynamic_shared_memory_type: posix
+    effective_cache_size: 4096MB
+    max_connections: "1000"
+    max_wal_size: 1GB
+    min_wal_size: 80MB
+    shared_buffers: 4096MB
+    wal_buffers: 1024MB
+    work_mem: 1024MB
+  resources:
+    limits:
+      cpu: 3000m
+      memory: 10Gi
+    requests:
+      cpu: 10m
+      memory: 5Gi
+  volume:
+    size: 200Gi
+
+
+# Seq
+baseURI: https://seq.app-{{ .Environment.Name }}.deeplay.io/
+firstRunAdminUsername: "admin"
+firstRunAdminPasswordHash: "FF5Q8bp2kJfuHM8YxGLOWM4Y/ywQTP5dqOaSEgA3G5vbD9qxnQ=="
+ui:
+  ingress:
+    enabled: true
+    annotations:
+      ingress.kubernetes.io/force-ssl-redirect: "true"
+    path: /
+    hosts: ["seq.app-{{ .Environment.Name }}.deeplay.io"]
+
+ingress:
+  className: contour
+  tls:
+    - secretName: wildcard-app-{{ .Environment.Name }}.deeplay.io
+      hosts: ["seq.app-{{ .Environment.Name }}.deeplay.io"]

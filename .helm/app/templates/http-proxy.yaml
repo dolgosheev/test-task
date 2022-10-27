@@ -1,0 +1,22 @@
+{{- if .Values.virtualhost }}
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: {{ include "default.fullname" . }}-http-proxy
+  labels:
+    {{- include "default.labels" . | nindent 4 }}
+  annotations:
+    external-dns.enabled: "true"
+spec:
+  ingressClassName: contour
+  virtualhost:
+    fqdn: {{ .Values.virtualhost.host }}
+    tls:
+      secretName: wildcard-{{ trimAll "*." .Values.virtualhost.certhost }}
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: {{ include "default.fullname" . }}
+          port: {{ .Values.service.port | int }}
+{{- end }}

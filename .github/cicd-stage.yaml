@@ -1,0 +1,45 @@
+run-name: CI/CD [${{ github.ref_name }} branch] - stage by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      application:
+        description: 'Application for deploy'
+        required: true
+        default: Grpc
+        type: choice
+        options:
+        - Grpc
+        - Rest
+
+defaults:
+  run:
+    working-directory: ./
+
+jobs:
+  sonarqube-analize:
+    if: ${{ github.ref_name == 'dev' }}
+    uses: deeplay-io/workflow-templates/.github/workflows/ci-cd-sonarqube.yml@neochat
+
+    secrets:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONARQUBE_ANALIZE_SECRET: ${{ secrets.SONARQUBE_ANALIZE_SECRET }}
+      PROJECT_NAME: Test.${{ inputs.application }} # ${{ github.event.repository.name }}.${{ inputs.application }} # test-task.Grpc
+      NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}
+
+  ci-stage:
+    if: ${{ github.ref_name == 'dev' }}
+    uses: ./cicd-template.yaml
+    needs: sonarqube-analize
+    with:
+      project: Test.${{ inputs.application }} # ${{ github.event.repository.name }}.${{ inputs.application }} # test-task.Grpc
+    secrets:
+      DOCKER_USERNAME_DEEPLAY: ${{ secrets.DOCKER_USERNAME_DEEPLAY }}
+      DOCKER_PASSWORD_DEEPLAY: ${{ secrets.DOCKER_PASSWORD_DEEPLAY }}
+      RT_NETSRV_IT_PASSWORD: ${{ secrets.RT_NETSRV_IT_PASSWORD }}
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_STAGE }}
+      HARBOR_SECRET_ARM: ${{ secrets.HARBOR_SECRET_ARM }}
+      ACCESS_SEQ_TOKEN: ${{ secrets.ACCESS_SEQ_STAGE_TOKEN }}
+      ACCESS_LOOKUP_TOKEN: ${{ secrets.ACCESS_LOOKUP_TOKEN }}
+      AQUEDUCT_KEY: ""
+      NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}
