@@ -2,13 +2,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: github-deployer
-  namespace: app-ns
+  namespace: arm-tests
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: github-deployer-role
-  namespace: app-ns
+  namespace: arm-tests
 rules:
 - apiGroups:
   - '*'
@@ -21,7 +21,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: github-deployer-rolebinding
-  namespace: app-ns
+  namespace: arm-tests
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -29,4 +29,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: github-deployer
-  namespace: app-ns
+  namespace: arm-tests

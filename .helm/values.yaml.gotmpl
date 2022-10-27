@@ -28,7 +28,7 @@ psql:
 
 
 # Seq
-baseURI: https://seq.app-{{ .Environment.Name }}.deeplay.io/
+baseURI: https://seq.arm-tests.deeplay.io/
 firstRunAdminUsername: "admin"
 firstRunAdminPasswordHash: "FF5Q8bp2kJfuHM8YxGLOWM4Y/ywQTP5dqOaSEgA3G5vbD9qxnQ=="
 ui:
@@ -37,10 +37,10 @@ ui:
     annotations:
       ingress.kubernetes.io/force-ssl-redirect: "true"
     path: /
-    hosts: ["seq.app-{{ .Environment.Name }}.deeplay.io"]
+    hosts: ["seq.arm-tests.deeplay.io"]
 
 ingress:
   className: contour
   tls:
-    - secretName: wildcard-app-{{ .Environment.Name }}.deeplay.io
-      hosts: ["seq.app-{{ .Environment.Name }}.deeplay.io"]
+    - secretName: wildcard-arm-tests.deeplay.io
+      hosts: ["seq.arm-tests.deeplay.io"]

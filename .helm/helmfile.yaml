@@ -18,21 +18,21 @@ environments:
 
 releases:
   - name: postgresql-config-zalando-app-{{ .Environment.Name }}
-    namespace: app-ns-{{ .Environment.Name }}
+    namespace: arm-tests
     version: 0.0.1-14
     createNamespace: false
     chart: deeplay-arm/postgresql-config-zalando-chart/postgresql-config-zalando
     values:
       - ./values.yaml.gotmpl
   - name: seq-app-{{ .Environment.Name }}
-    namespace: app-ns-{{ .Environment.Name }}
+    namespace: arm-tests
     version: 2022.1.7929
     createNamespace: false
     chart: seq/seq
     values:
       - ./values.yaml.gotmpl
   - name: {{ .Values.APP }}-env-{{ .Environment.Name }}
-    namespace: app-ns-{{ .Environment.Name }}
+    namespace: arm-tests
     version: {{ .Values.CHART_TAG }}
     createNamespace: false
     chart: deeplay-arm/{{ .Values.APP }}-chart/{{ .Values.APP }}
