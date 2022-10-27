@@ -1,8 +1,11 @@
 appSettings:
+  "TestGrpc:Host": "test-task-grpc-env-{{ .Environment.Name }}"
   "Postgres:Host": "app-{{ .Environment.Name }}-app-launcher-postgres"
-  "Postgres:Password": {{ .Values.POSTGRES_PASSWORD | quote }}
-  "Postgres:Database": "app-{{ .Environment.Name }}"
+  {{ if eq .Environment.Name "prod" }}
+  "Serilog:MinimumLevel:Default": "Information"
+  {{else}}
   "Serilog:MinimumLevel:Default": "Verbose"
+  {{end}}
   "Serilog:WriteTo:0:Args:serverUrl": "http://seq-app-{{ .Environment.Name }}:5341/"
   {{/* "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN }} */}}
 
@@ -15,6 +18,10 @@ resources:
     memory: 500Mi
 
 service:
-  port: 30001
+  port: 30002
   metrics:
-    port: 30457
+    port: 30003
+
+virtualhost:
+  host: rest.app-ns-{{ .Environment.Name }}.deeplay.io
+  certhost: *.app-ns-{{ .Environment.Name }}.deeplay.io

@@ -1,4 +1,9 @@
 # postgres
+{{ if eq .Environment.Name "prod" }}
+replicas: 3
+{{ else }}
+replicas: 1
+{{ end }}
 psql:
   name: app
   environment: {{ .Environment.Name }}
