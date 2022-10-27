@@ -152,7 +152,7 @@ jobs:
         sed -i "s/description\:.*/description\: A Helm chart for ${APP}/" .helm/app/Chart.yaml
         sed -i "s/version\:.*/version\: ${DEFAULT_VERSION_CHART}-${SHORT_SHA}/" .helm/app/Chart.yaml
         sed -i "s/appVersion\:.*/appVersion\: ${DEFAULT_VERSION_CHART}-${SHORT_SHA}/" .helm/app/Chart.yaml
-        helm lint ./.helm/${APP}
+        helm lint ./.helm/app
 
     - name: Push helm chart
       run: |
