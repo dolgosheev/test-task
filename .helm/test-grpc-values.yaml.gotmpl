@@ -1,5 +1,5 @@
 appSettings:
-  "Postgres:Host": "app-{{ .Environment.Name }}-app-launcher-postgres"
+  "Postgres:Host": "{{ .Values.POSTGRES_APP }}-{{ .Environment.Name }}-{{ .Values.POSTGRES_APP }}-launcher-postgres"
   "Postgres:Password": {{ .Values.POSTGRES_PASSWORD | quote }}
   "Postgres:Database": "app-{{ .Environment.Name }}"
   {{ if eq .Environment.Name "prod" }}

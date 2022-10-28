@@ -1,6 +1,6 @@
 appSettings:
   "TestGrpc:Host": "test-task-grpc-env-{{ .Environment.Name }}"
-  "Postgres:Host": "app-{{ .Environment.Name }}-app-launcher-postgres"
+  "Postgres:Host": "{{ .Values.POSTGRES_APP }}-{{ .Environment.Name }}-{{ .Values.POSTGRES_APP }}-launcher-postgres"
   {{ if eq .Environment.Name "prod" }}
   "Serilog:MinimumLevel:Default": "Information"
   {{else}}
@@ -23,5 +23,5 @@ service:
     port: 30003
 
 virtualhost:
-  host: rest.arm-tests.deeplay.io
-  certhost: "*.arm-tests.deeplay.io"
+  host: rest.{{ .Values.NAMESPACE }}.deeplay.io
+  certhost: "*.{{ .Values.NAMESPACE }}.deeplay.io"

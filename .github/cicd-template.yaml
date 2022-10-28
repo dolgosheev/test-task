@@ -15,6 +15,14 @@ on:
         type: string
         required: true
         default: stage
+      namespace:
+        type: string
+        required: false
+        default: arm-tests
+      pgapp:
+        type: string
+        required: false
+        default: arm-tests
     secrets:
       DOCKER_USERNAME_DEEPLAY:
         required: true
@@ -184,13 +192,15 @@ jobs:
     - name: Deploy
       env:
         ENVIRONMENT: ${{ inputs.environment }}
+        NAMESPACE: ${{ inputs.namespace }}
+        POSTGRES_APP: ${{ inputs.pgapp }}
       run: |
         echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/CONFIG
         export KUBECONFIG=~/CONFIG
-        export PG_PWD=$(kubectl get secret --namespace app-ns-${ENVIRONMENT} postgres.app-${ENVIRONMENT}-app-launcher-postgres.credentials.postgresql.acid.zalan.do -o jsonpath="{.data.password}" | base64 -d)
+        export PG_PWD=$(kubectl get secret --namespace ${NAMESPACE} postgres.${POSTGRES_APP}-${ENVIRONMENT}-${POSTGRES_APP}-launcher-postgres.credentials.postgresql.acid.zalan.do -o jsonpath="{.data.password}" | base64 -d)
         APP=$(echo "${{ inputs.project }}" | sed 's/\./-/g' | awk '{print tolower($0)}')
         echo "APP=${APP}" >> $GITHUB_ENV
         if [ "$TAG_NAME" != "" ]; then
           echo "SHORT_SHA=$TAG_NAME" >> $GITHUB_ENV
         fi
-        helmfile -f .helm/helmfile.yaml -e ${ENVIRONMENT} --state-values-set POSTGRES_PASSWORD=${PG_PWD},SEQ_TOKEN=${{ secrets.ACCESS_SEQ_TOKEN }},LOOKUP_TOKEN=${{ secrets.ACCESS_LOOKUP_TOKEN }},HARBOR_SECRET=${{ secrets.HARBOR_SECRET_ARM }},CHART_TAG=${DEFAULT_VERSION_CHART}-${SHORT_SHA},APP=${APP},AQUEDUCT_KEY=${{ secrets.AQUEDUCT_KEY }} sync
+        helmfile -f .helm/helmfile.yaml -e ${ENVIRONMENT} --state-values-set POSTGRES_PASSWORD=${PG_PWD},SEQ_TOKEN=${{ secrets.ACCESS_SEQ_TOKEN }},LOOKUP_TOKEN=${{ secrets.ACCESS_LOOKUP_TOKEN }},HARBOR_SECRET=${{ secrets.HARBOR_SECRET_ARM }},CHART_TAG=${DEFAULT_VERSION_CHART}-${SHORT_SHA},APP=${APP},AQUEDUCT_KEY=${{ secrets.AQUEDUCT_KEY }},NAMESPACE=${NAMESPACE},POSTGRES_APP=${POSTGRES_APP} sync

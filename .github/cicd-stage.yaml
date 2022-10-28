@@ -1,4 +1,4 @@
-run-name: CI/CD [${{ github.ref_name }} branch] - stage by @${{ github.actor }}
+run-name: CI/CD [${{ github.ref_name }} branch] ${{ inputs.application }} option - stage by @${{ github.actor }}
 
 on:
   workflow_dispatch:
@@ -11,6 +11,13 @@ on:
         options:
         - Grpc
         - Rest
+      environment:
+        description: 'environment to deploy'
+        required: true
+        default: stage
+        type: choice
+        options:
+        - stage
 
 defaults:
   run:
@@ -29,17 +36,19 @@ jobs:
 
   ci-stage:
     if: ${{ github.ref_name == 'dev' }}
-    uses: ./cicd-template.yaml
+    uses: ./.github/workflows/cicd-template.yaml
     needs: sonarqube-analize
+    environment: ${{ inputs.environment }}
     with:
       project: Test.${{ inputs.application }} # ${{ github.event.repository.name }}.${{ inputs.application }} # test-task.Grpc
+      environment: ${{ inputs.environment }}
     secrets:
       DOCKER_USERNAME_DEEPLAY: ${{ secrets.DOCKER_USERNAME_DEEPLAY }}
       DOCKER_PASSWORD_DEEPLAY: ${{ secrets.DOCKER_PASSWORD_DEEPLAY }}
       RT_NETSRV_IT_PASSWORD: ${{ secrets.RT_NETSRV_IT_PASSWORD }}
-      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_STAGE }}
+      KUBE_CONFIG: ${{ secrets.KUBE_STAGE }}
       HARBOR_SECRET_ARM: ${{ secrets.HARBOR_SECRET_ARM }}
-      ACCESS_SEQ_TOKEN: ${{ secrets.ACCESS_SEQ_STAGE_TOKEN }}
+      ACCESS_SEQ_TOKEN: ${{ secrets.ACCESS_SEQ_TOKEN }}
       ACCESS_LOOKUP_TOKEN: ${{ secrets.ACCESS_LOOKUP_TOKEN }}
       AQUEDUCT_KEY: ""
       NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}

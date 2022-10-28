@@ -5,7 +5,7 @@ replicas: 3
 replicas: 1
 {{ end }}
 psql:
-  name: app
+  name: {{ .Values.POSTGRES_APP }}
   environment: {{ .Environment.Name }}
   parameters:
     dynamic_shared_memory_type: posix
@@ -24,11 +24,10 @@ psql:
       cpu: 10m
       memory: 5Gi
   volume:
-    size: 200Gi
-
+    size: 20Gi
 
 # Seq
-baseURI: https://seq.arm-tests.deeplay.io/
+baseURI: https://seq.{{ .Values.NAMESPACE }}.deeplay.io/
 firstRunAdminUsername: "admin"
 firstRunAdminPasswordHash: "FF5Q8bp2kJfuHM8YxGLOWM4Y/ywQTP5dqOaSEgA3G5vbD9qxnQ=="
 ui:
@@ -37,10 +36,10 @@ ui:
     annotations:
       ingress.kubernetes.io/force-ssl-redirect: "true"
     path: /
-    hosts: ["seq.arm-tests.deeplay.io"]
+    hosts: ["seq.{{ .Values.NAMESPACE }}.deeplay.io"]
 
 ingress:
   className: contour
   tls:
-    - secretName: wildcard-arm-tests.deeplay.io
-      hosts: ["seq.arm-tests.deeplay.io"]
+    - secretName: wildcard-{{ .Values.NAMESPACE }}.deeplay.io
+      hosts: ["seq.{{ .Values.NAMESPACE }}.deeplay.io"]
