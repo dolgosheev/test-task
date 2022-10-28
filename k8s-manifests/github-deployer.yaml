@@ -4,29 +4,24 @@ metadata:
   name: github-deployer
   namespace: arm-tests
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: v1
+kind: Secret
 metadata:
-  name: github-deployer-role
+  name: github-deployer-secret
   namespace: arm-tests
-rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - '*'
+  annotations:
+    kubernetes.io/service-account.name: github-deployer
+type: kubernetes.io/service-account-token
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: github-deployer-rolebinding
+  name: github-actions
   namespace: arm-tests
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: github-deployer-role
+  kind: ClusterRole
+  name: admin
 subjects:
-- kind: ServiceAccount
-  name: github-deployer
-  namespace: arm-tests
+  - kind: ServiceAccount
+    name: github-deployer

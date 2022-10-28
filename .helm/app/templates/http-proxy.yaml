@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "default.labels" . | nindent 4 }}
   annotations:
-    external-dns.enabled: "true"
+    external-dns.enabled: "false"
 spec:
   ingressClassName: contour
   virtualhost:
