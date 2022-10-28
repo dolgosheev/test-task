@@ -52,3 +52,10 @@ jobs:
       ACCESS_LOOKUP_TOKEN: ${{ secrets.ACCESS_LOOKUP_TOKEN }}
       AQUEDUCT_KEY: ""
       NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}
+
+  deploy-reject:
+    if: ${{ github.ref_name != 'dev' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "You cannot test/build/deploy NeoChat.DataBase.${{ inputs.application }} from a branch ${{ github.ref_name }}"
