@@ -1,5 +1,5 @@
 appSettings:
-  "Postgres:Host": "{{ .Values.POSTGRES_APP }}-{{ .Environment.Name }}-{{ .Values.POSTGRES_APP }}-launcher-postgres"
+  "Postgres:Host": "{{ .Values.INFR_NAME }}-{{ .Environment.Name }}-{{ .Values.INFR_NAME }}-launcher-postgres"
   "Postgres:Password": {{ .Values.POSTGRES_PASSWORD | quote }}
   "Postgres:Database": "app-{{ .Environment.Name }}"
   {{ if eq .Environment.Name "prod" }}
@@ -7,7 +7,7 @@ appSettings:
   {{else}}
   "Serilog:MinimumLevel:Default": "Verbose"
   {{end}}
-  "Serilog:WriteTo:0:Args:serverUrl": "http://seq-app-{{ .Environment.Name }}:5341/"
+  "Serilog:WriteTo:0:Args:serverUrl": "http://seq-{{ .Values.INFR_NAME }}-{{ .Environment.Name }}:5341/"
   {{/* "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN }} */}}
 
 resources:

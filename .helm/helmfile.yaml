@@ -9,28 +9,12 @@ repositories:
     username: 'robot$arm+chat'
     password: {{ .Values.HARBOR_SECRET }}
     oci: true
-  - url: https://helm.datalust.co/
-    name: seq
 
 environments:
   stage:
   prod:
 
 releases:
-  - name: postgresql-config-zalando-app-{{ .Environment.Name }}
-    namespace: {{ .Values.NAMESPACE }}
-    version: 0.0.1-14
-    createNamespace: false
-    chart: deeplay-arm/postgresql-config-zalando-chart/postgresql-config-zalando
-    values:
-      - ./values.yaml.gotmpl
-  - name: seq-app-{{ .Environment.Name }}
-    namespace: {{ .Values.NAMESPACE }}
-    version: 2022.1.7929
-    createNamespace: false
-    chart: seq/seq
-    values:
-      - ./values.yaml.gotmpl
   - name: {{ .Values.APP }}-env-{{ .Environment.Name }}
     namespace: {{ .Values.NAMESPACE }}
     version: {{ .Values.CHART_TAG }}
