@@ -1,4 +1,5 @@
 run-name: CI/CD [${{ github.ref_name }} branch] ${{ inputs.application }} option - stage by @${{ github.actor }}
+name: Test, build, deploy
 
 on:
   workflow_dispatch:
