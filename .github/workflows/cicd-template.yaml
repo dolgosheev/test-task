@@ -1,5 +1,5 @@
 # deeplay-io/workflow-templates/.github/workflows/ci-cd.yml@test
-name: CI/CD [dev branch] (.net6 core, node.js 16.*, netsrv registry)
+name: CI/CD [template] (.net6 core, node.js 16.*, netsrv registry)
 
 on:
   workflow_call:
