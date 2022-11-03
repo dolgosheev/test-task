@@ -56,7 +56,6 @@ jobs:
 
     outputs:
       sha: ${{ steps.short-sha.outputs.sha }}
-      chart-version: ${{ steps.chart-version.outputs.version }}
       tag: ${{ steps.tag-name.outputs.tag }}
 
     steps:
