@@ -22,6 +22,9 @@ service:
     name: prometheus
     port: 30457
 
+# pdb: {}
+  # minAvailable: 1
+
 resources: {}
 
 nodeSelector: {}

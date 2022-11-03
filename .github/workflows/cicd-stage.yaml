@@ -50,4 +50,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "You cannot test/build/deploy NeoChat.DataBase.${{ inputs.application }} from a branch ${{ github.ref_name }}"
+          echo "You cannot test/build/deploy ${{ github.event.repository.name }}.${{ inputs.application }} from a branch ${{ github.ref_name }}"
