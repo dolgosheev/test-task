@@ -1,0 +1,19 @@
+{{- if hasKey .Values "pdb" }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "default.fullname" . }}-pdb
+  labels:
+    {{- include "default.labels" . | nindent 4 }}
+spec:
+{{- if .Values.pdb }}
+{{- if hasKey .Values.pdb "minAvailable" }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+{{- end }}
+{{- else }}
+  minAvailable: {{ max (sub .Values.replicaCount 1) 1 }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "default.selectorLabels" . | nindent 6 }}
+{{- end }}
