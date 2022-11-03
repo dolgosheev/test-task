@@ -1,5 +1,5 @@
 appSettings:
-  "TestGrpc:Host": "test-task-grpc-env-{{ .Environment.Name }}"
+  "TestGrpc:Host": "test-grpc-env-{{ .Environment.Name }}"
   "Postgres:Host": "{{ .Values.INFR_NAME }}-{{ .Environment.Name }}-{{ .Values.INFR_NAME }}-launcher-postgres"
   {{ if eq .Environment.Name "prod" }}
   "Serilog:MinimumLevel:Default": "Information"
