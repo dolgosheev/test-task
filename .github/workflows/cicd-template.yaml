@@ -107,6 +107,7 @@ jobs:
         DEFAULT_VERSION_CHART: ${{ inputs.chart_version }}
       run: |
         APP=$(echo "${{ inputs.project }}" | sed 's/\./-/g' | awk '{print tolower($0)}')
+        echo "APP=${APP}" >> $GITHUB_ENV
         echo 'DOCKER_TAGS<<EOF' >> $GITHUB_ENV
         if [ "$TAG_NAME" != "" ]; then
           echo "registry.deeplay.io/arm/${APP}:${DEFAULT_VERSION_CHART}-${TAG_NAME}"
@@ -120,6 +121,19 @@ jobs:
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        buildkitd-flags: --debug
+        config-inline: |
+          [registry."docker.io"]
+            mirrors = ["docker-mirror.docker-mirror.svc.cluster.local:5000"]
+
+          [registry."docker-mirror.docker-mirror.svc.cluster.local:5000"]
+            http = true
+            insecure = true
+
+          [registry."ci-cache.ci-cache.svc.cluster.local:5000"]
+            http = true
+            insecure = true
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
@@ -130,6 +144,8 @@ jobs:
           NUGET_PASSWORD=${{ secrets.NUGET_PASSWORD }}
         push: true
         tags: ${{ env.DOCKER_TAGS }}
+        cache-from: type=registry,ref=ci-cache.ci-cache.svc.cluster.local:5000/arm/${APP}:cache
+        cache-to: type=registry,ref=ci-cache.ci-cache.svc.cluster.local:5000/arm/${APP}:cache,mode=max
 
   prepare_helm:
     runs-on:
