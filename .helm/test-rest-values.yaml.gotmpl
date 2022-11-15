@@ -23,5 +23,5 @@ service:
     port: 30003
 
 virtualhost:
-  host: rest.{{ .Release.Namespace }}.deeplay.io
-  certhost: "*.{{ .Release.Namespace }}.deeplay.io"
+  host: rest.{{ .Values.NAMESPACE }}.deeplay.io
+  certhost: "*.{{ .Values.NAMESPACE }}.deeplay.io"
