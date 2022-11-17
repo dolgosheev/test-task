@@ -1,3 +1,4 @@
+{{- $app := .Values.image -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,8 +29,8 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ $app.repository }}:{{ $app.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $app.pullPolicy }}
           {{- if .Values.appSettings }}
           args:
           {{- range $key, $value := .Values.appSettings }}

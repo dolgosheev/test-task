@@ -1,3 +1,4 @@
+{{- $values := index .Values "service" -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -5,15 +6,15 @@ metadata:
   labels:
     {{- include "default.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ $values.type }}
   ports:
-    - port: {{ .Values.service.port | int }}
-      targetPort: {{ .Values.service.name }}
+    - port: {{ $values.port | int }}
+      targetPort: {{ $values.name }}
       protocol: TCP
-      name: {{ .Values.service.name }}
-    - port: {{ .Values.service.metrics.port | int }}
+      name: {{ $values.name }}
+    - port: {{ $values.metrics.port | int }}
       protocol: TCP
-      targetPort: {{ .Values.service.metrics.name }}
-      name: {{ .Values.service.metrics.name }}
+      targetPort: {{ $values.metrics.name }}
+      name: {{ $values.metrics.name }}
   selector:
     {{- include "default.selectorLabels" . | nindent 4 }}

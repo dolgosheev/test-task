@@ -1,22 +1,31 @@
-{{- if .Values.virtualhost }}
+{{- $values := index .Values "virtualhost" -}}
+{{- if $values }}
 apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
   name: {{ include "default.fullname" . }}-http-proxy
   labels:
     {{- include "default.labels" . | nindent 4 }}
+  {{- with .Values.httpproxyAnnotations }}
   annotations:
-    external-dns.enabled: "false"
+    {{- toYaml . | nindent 4}}
+  {{- end }}
 spec:
   ingressClassName: contour
   virtualhost:
-    fqdn: {{ .Values.virtualhost.host }}
+    fqdn: {{ $values.host }}
     tls:
-      secretName: wildcard-{{ trimAll "*." .Values.virtualhost.certhost }}
+      secretName: wildcard-{{ trimAll "*." $values.certhost }}
   routes:
     - conditions:
         - prefix: /
       services:
         - name: {{ include "default.fullname" . }}
           port: {{ .Values.service.port | int }}
+{{- if hasKey $values "protocol" }}
+          protocol: {{ $values.protocol }}
+      timeoutPolicy:
+        response: infinity
+        idle: infinity
+{{- end }}
 {{- end }}

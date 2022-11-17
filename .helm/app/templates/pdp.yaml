@@ -1,4 +1,5 @@
 {{- if hasKey .Values "pdb" }}
+{{- $values := index .Values "pdb" -}}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -6,9 +7,9 @@ metadata:
   labels:
     {{- include "default.labels" . | nindent 4 }}
 spec:
-{{- if .Values.pdb }}
-{{- if hasKey .Values.pdb "minAvailable" }}
-  minAvailable: {{ .Values.pdb.minAvailable }}
+{{- if $values }}
+{{- if hasKey $values "minAvailable" }}
+  minAvailable: {{ $values.minAvailable }}
 {{- end }}
 {{- else }}
   minAvailable: {{ max (sub .Values.replicaCount 1) 1 }}

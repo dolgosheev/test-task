@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: registry.deeplay.io/arm/app
+  repository: registry.deeplay.io/arm/fas-catalog
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -10,6 +10,9 @@ fullnameOverride: ""
 
 podAnnotations: {}
 
+httpproxyAnnotations:
+  external-dns.enabled: "false"
+
 podSecurityContext: {}
 
 securityContext: {}
@@ -17,10 +20,13 @@ securityContext: {}
 service:
   name: grpc
   type: ClusterIP
-  port: 30407
+  port: 30401
   metrics:
     name: prometheus
-    port: 30457
+    port: 30451
+
+# vpa:
+  # resourcePolicy: {}
 
 # pdb: {}
   # minAvailable: 1
