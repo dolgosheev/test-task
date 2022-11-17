@@ -7,7 +7,7 @@ appSettings:
   "Serilog:MinimumLevel:Default": "Verbose"
   {{end}}
   "Serilog:WriteTo:0:Args:serverUrl": "http://seq-{{ .Values.INFR_NAME }}-{{ .Environment.Name }}:5341/"
-  {{/* "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN }} */}}
+  {{/* "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN | quote }} */}}
 
 resources:
   limits:

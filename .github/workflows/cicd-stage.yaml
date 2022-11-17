@@ -20,7 +20,7 @@ defaults:
 jobs:
   sonarqube-analize:
     if: ${{ github.ref_name == 'dev' }}
-    uses: deeplay-io/workflow-templates/.github/workflows/ci-cd-sonarqube.yml@neochat
+    uses: deeplay-io/arm-workflow-templates/.github/workflows/ci-cd-sonarqube.yml@neochat
 
     secrets:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

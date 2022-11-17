@@ -1,4 +1,4 @@
-# deeplay-io/workflow-templates/.github/workflows/ci-cd.yml@test
+# deeplay-io/arm-workflow-templates/.github/workflows/ci-cd.yml@test
 name: CI/CD [template] (.net6 core, node.js 16.*, netsrv registry)
 
 on:
