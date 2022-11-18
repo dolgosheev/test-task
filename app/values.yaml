@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: registry.deeplay.io/arm/fas-catalog
+  repository: registry.deeplay.io/arm/app
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -30,6 +30,11 @@ service:
 
 # pdb: {}
   # minAvailable: 1
+
+# virtualhost:
+  # host: app.example.com
+  # certhost: "*.example.com"
+  # # protocol: h2c
 
 resources: {}
 

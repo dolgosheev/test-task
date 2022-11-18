@@ -25,5 +25,6 @@
 **/.helm
 Seq/
 Db/
+app/
 LICENSE
 README.md

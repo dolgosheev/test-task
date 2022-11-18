@@ -17,9 +17,9 @@ environments:
 releases:
   - name: {{ .Values.APP }}-env-{{ .Environment.Name }}
     namespace: {{ .Values.NAMESPACE }}
-    version: {{ .Values.CHART_TAG }}
+    version: 0.0.1 # update manually
     createNamespace: false
-    chart: deeplay-arm/{{ .Values.APP }}-chart/{{ .Values.APP }}
+    chart: deeplay-arm/common-helm-chart/common-helm-chart
     values:
       - ./{{ .Values.APP }}-values.yaml.gotmpl
       - image:
