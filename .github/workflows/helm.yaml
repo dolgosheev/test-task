@@ -38,4 +38,4 @@ jobs:
         helm registry login https://registry.deeplay.io/ --username '${{ secrets.DOCKER_USERNAME_DEEPLAY }}' --password '${{ secrets.DOCKER_PASSWORD_DEEPLAY }}'
         helm package ./app
         helm push common-helm-chart-${{ steps.new-tag.outputs.new_tag }}.tgz oci://registry.deeplay.io/arm/common-helm-chart
-        rm common-helm-${{ steps.new-tag.outputs.new_tag }}.tgz
+        rm common-helm-chart-${{ steps.new-tag.outputs.new_tag }}.tgz
