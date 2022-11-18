@@ -6,10 +6,11 @@ on:
       application:
         description: 'Application for deploy'
         required: true
-        default: Catalog
+        default: Grpc
         type: choice
         options:
-        - Catalog
+        - Grpc
+        - Rest
       environment:
         type: environment
         required: true
