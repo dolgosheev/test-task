@@ -62,7 +62,7 @@ jobs:
         echo "stage=${STAGE_NS}" >> $GITHUB_OUTPUT
 
   ci:
-    uses: deeplay-io/arm-workflow-templates/.github/workflows/ci-cd-common.yaml@helm/template
+    uses: ./.github/workflows/ci-cd-common-tmpl.yaml
     needs:
     - sonarqube-analize
     - use_ns
