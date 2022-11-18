@@ -13,7 +13,6 @@ jobs:
       - self-hosted
       - Linux
       - kube-common
-    needs: prepare_application
     container:
       image: quay.io/roboll/helmfile:v0.142.0
     env:
