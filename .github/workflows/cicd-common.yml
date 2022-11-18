@@ -29,8 +29,8 @@ defaults:
     working-directory: ./
 
 env:
-  PROD_NS: backoffice-prod
-  STAGE_NS: fas-dev
+  PROD_NS: arm-tests
+  STAGE_NS: arm-tests
 
 jobs:
   sonarqube-analize:
