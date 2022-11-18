@@ -41,7 +41,7 @@ jobs:
     secrets:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONARQUBE_ANALIZE_SECRET: ${{ secrets.SONARQUBE_ANALIZE_SECRET }}
-      PROJECT_NAME: ${{ github.event.repository.name }}
+      PROJECT_NAME: Test.${{ inputs.application }}
       NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}
 
   use_ns:
@@ -67,7 +67,7 @@ jobs:
     - sonarqube-analize
     - use_ns
     with:
-      project: ${{ github.event.repository.name }}
+      project: Test.${{ inputs.application }}
       environment: ${{ inputs.environment }}
       namespace: ${{ inputs.environment == 'prod' && needs.use_ns.outputs.prod_ns || needs.use_ns.outputs.stage_ns }}
     secrets:
