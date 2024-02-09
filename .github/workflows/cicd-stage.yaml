@@ -1,0 +1,83 @@
+run-name: ${{ inputs.comment }} [${{ github.ref_name }} branch] ${{ inputs.application }} - ${{ inputs.environment }} by @${{ github.actor }}
+name: Test, build, deploy
+on:
+  workflow_dispatch:
+    inputs:
+      application:
+        description: 'Application for deploy'
+        required: true
+        default: Grpc
+        type: choice
+        options:
+        - Grpc
+        - Rest
+      environment:
+        type: environment
+        required: true
+        description: 'environment to deploy'
+        default: stage
+      comment:
+        description: "comment"
+        required: true
+        default: "deploy"
+        type: string
+
+concurrency:
+  group: deploy-${{ inputs.application }}
+
+defaults:
+  run:
+    working-directory: ./
+
+env:
+  PROD_NS: arm-tests
+  STAGE_NS: arm-tests
+
+jobs:
+  sonarqube-analize:
+    if: ${{ github.ref_name == 'dev' }}
+    uses: deeplay-io/arm-workflow-templates/.github/workflows/ci-cd-sonarqube.yml@tmpls
+
+    secrets:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONARQUBE_ANALIZE_SECRET: ${{ secrets.SONARQUBE_ANALIZE_SECRET }}
+      PROJECT_NAME: Test.${{ inputs.application }} # ${{ github.event.repository.name }}.${{ inputs.application }} # test-task.Grpc
+      NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}
+
+  use_ns:
+    outputs:
+      prod_ns: ${{ steps.ns.outputs.prod }}
+      stage_ns: ${{ steps.ns.outputs.stage }}
+    runs-on:
+      - self-hosted
+      - Linux
+      - kube-common
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: namespaces
+      id: ns
+      run: |
+        echo "prod=${PROD_NS}" >> $GITHUB_OUTPUT
+        echo "stage=${STAGE_NS}" >> $GITHUB_OUTPUT
+
+  ci-stage:
+    uses: deeplay-io/arm-workflow-templates/.github/workflows/ci-cd.yaml@tmpls
+    needs:
+    - sonarqube-analize
+    - use_ns
+    with:
+      project: Test.${{ inputs.application }} # ${{ github.event.repository.name }}.${{ inputs.application }} # test-task.Grpc
+      environment: ${{ inputs.environment }}
+      namespace: ${{ inputs.environment == 'prod' && needs.use_ns.outputs.prod_ns || needs.use_ns.outputs.stage_ns }}
+
+    secrets:
+      DOCKER_USERNAME_DEEPLAY: ${{ secrets.DOCKER_USERNAME_DEEPLAY }}
+      DOCKER_PASSWORD_DEEPLAY: ${{ secrets.DOCKER_PASSWORD_DEEPLAY }}
+      RT_NETSRV_IT_PASSWORD: ${{ secrets.RT_NETSRV_IT_PASSWORD }}
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      HARBOR_SECRET_ARM: ${{ secrets.HARBOR_SECRET_ARM }}
+      ACCESS_SEQ_TOKEN: ${{ secrets.ACCESS_SEQ_TOKEN }}
+      ACCESS_LOOKUP_TOKEN: ${{ secrets.ACCESS_LOOKUP_TOKEN }}
+      AQUEDUCT_KEY: ""
+      NUGET_PASSWORD: ${{ secrets.NUGET_PASSWORD }}

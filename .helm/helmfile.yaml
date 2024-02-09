@@ -1,0 +1,26 @@
+helmDefaults:
+  wait: true
+  atomic: true
+  timeout: 300
+
+repositories:
+  - url: registry.deeplay.io/arm
+    name: deeplay-arm
+    username: 'robot$arm+chat'
+    password: {{ .Values.HARBOR_SECRET }}
+    oci: true
+
+environments:
+  stage:
+  prod:
+
+releases:
+  - name: {{ .Values.APP }}-env-{{ .Environment.Name }}
+    namespace: {{ .Values.NAMESPACE }}
+    version: 0.0.1 # update manually
+    createNamespace: false
+    chart: deeplay-arm/common-helm-chart/common-helm-chart
+    values:
+      - ./{{ .Values.APP }}-values.yaml.gotmpl
+      - image:
+          repository: registry.deeplay.io/arm/{{ .Values.APP }}
